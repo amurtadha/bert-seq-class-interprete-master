@@ -133,7 +133,7 @@ def main():
     # Hyper Parameters
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset', default='MR', type=str, help='Corpus-8,Corpus-26, ')
-    parser.add_argument('--pretrained_bert_name', default='../plm/bert/', type=str)
+    parser.add_argument('--pretrained_bert_name', default='bert-base-uncased', type=str)
     parser.add_argument('--device_group', default='1' , type=str, help='e.g. cuda:0')
     parser.add_argument('--max_seq_len', default=100, type=int)
     parser.add_argument('--device', default='cuda', type=str)
