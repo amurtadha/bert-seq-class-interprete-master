@@ -6,7 +6,7 @@
 
 # Data
 
-The data should be in json file with this format {'text':'', 'label':''}. Please check datasets/MR  as an example.
+The data should be in json file with this format {'text':'', 'label':''}. We have processed MR as an example, [download](https://drive.google.com/drive/folders/1D-HnEWps6NsajM3x-DIn560atKFlw2-I?usp=sharing) and place it datasets/MR.
 
 # Prerequisites:
 Required packages are listed in the requirements.txt file:
@@ -22,7 +22,7 @@ pip install -r requirements.txt
 python train_baseline.py --dataset='MR' 
 ```
 
-Note that we have already trained a baseline on MR can be downloaded from this [link](https://drive.google.com/file/d/19xqW8xQ3sehrPd86LCz8bStjreEbjwld/view?usp=sharing), simply put in state_dict, or you can use your custom model, no additional configuration is needed.
+Note that we have already trained a baseline on MR can be downloaded from this [link](https://drive.google.com/drive/folders/1D-HnEWps6NsajM3x-DIn560atKFlw2-I?usp=sharing), simply put in state_dict, or you can use your custom model, no additional configuration is needed.
 
 
 *  Interprete the baseline prediction         
