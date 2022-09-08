@@ -4,17 +4,12 @@ import os
 import torch
 from transformers import BertTokenizer
 from transformers import BertForSequenceClassification, BertConfig
-
 from captum.attr import IntegratedGradients
-# from captum.attr import InterpretableEmbeddingBase, TokenReferenceBase
 from captum.attr import visualization
-# from captum.attr import configure_interpretable_embedding_layer, remove_interpretable_embedding_layer
 from collections import OrderedDict
 from data_utils import Process_baseline
 from tqdm import tqdm
 import json
-
-
 
 class Instructor:
     def __init__(self, opt):
@@ -49,11 +44,9 @@ class Instructor:
             attention_mask = torch.ones(embedding_output.shape[0], embedding_output.shape[1]).to(embedding_output)
 
         extended_attention_mask = attention_mask.unsqueeze(1).unsqueeze(2)
-
         extended_attention_mask = extended_attention_mask.to(
             dtype=next(self.model.parameters()).dtype)  # fp16 compatibility
         extended_attention_mask = (1.0 - extended_attention_mask) * -10000.0
-
         if head_mask is not None:
             if head_mask.dim() == 1:
                 head_mask = head_mask.unsqueeze(0).unsqueeze(0).unsqueeze(-1).unsqueeze(-1)
@@ -89,7 +82,7 @@ class Instructor:
         # compute attributions and approximation delta using integrated gradients
         attributions_ig, delta = self.ig.attribute(input_embedding, n_steps=500, return_convergence_delta=True)
 
-        # print('pred: ', pred_ind, '(', '%.2f' % pred, ')', ', delta: ', abs(delta))
+        print('pred: ', pred_ind, '(', '%.2f' % pred, ')', ', delta: ', abs(delta))
 
         tokens = self.tokenizer.convert_ids_to_tokens(input_ids[0])
         self.add_attributions_to_visualizer(attributions_ig, tokens, pred, pred_ind, label, delta)
@@ -135,19 +128,10 @@ def main():
     parser.add_argument('--dataset', default='MR', type=str, help='Corpus-8,Corpus-26, ')
     parser.add_argument('--pretrained_bert_name', default='bert-base-uncased', type=str)
     parser.add_argument('--device_group', default='1' , type=str, help='e.g. cuda:0')
-    parser.add_argument('--max_seq_len', default=100, type=int)
+    parser.add_argument('--max_seq_len', default=30, type=int)
     parser.add_argument('--device', default='cuda', type=str)
     opt = parser.parse_args()
-
-
-
-    opt.max_seq_len = {'TNEWS': 128, 'OCNLI': 128, 'IFLYTEK': 128, 'AFQMC': 128, 'YELP': 156, 'TREC': 20, 'yahoo': 256,
-                       'ELEC': 256, 'MPQA': 10, 'AG': 50, 'MR': 30, 'SST-2': 30, 'SST-2-small': 30, 'SST-5': 30,
-                       'PC': 30, 'CR': 30,
-                       'DBPedia': 160, 'IMDB': 220, 'SUBJ': 30,
-                       'semeval': 80, 'R8': 207, 'hsumed': 156, 'FAKE': 885}.get(opt.dataset)
     os.environ["CUDA_VISIBLE_DEVICES"] = opt.device_group
-
     opt.inputs_cols =   ['input_ids', 'segments_ids', 'input_mask', 'label']
     ins = Instructor(opt)
     ins.run_sentence()
