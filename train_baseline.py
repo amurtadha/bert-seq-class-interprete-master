@@ -33,7 +33,7 @@ class Instructor:
 
         tokenizer = AutoTokenizer.from_pretrained(opt.pretrained_bert_name)
         # fn = Process_Corpus_json
-        self.opt.lebel_dim = len(json.load(open('../datasets/{0}/labels.json'.format(opt.dataset))))
+        self.opt.lebel_dim = len(json.load(open('datasets/{0}/labels.json'.format(opt.dataset))))
         self.trainset = Process_baseline(opt.dataset_file['train'], tokenizer, opt.max_seq_len, opt.dataset)
         self.valset = Process_baseline(opt.dataset_file['dev'], tokenizer, opt.max_seq_len, opt.dataset)
         self.testset = Process_baseline(opt.dataset_file['test'], tokenizer, opt.max_seq_len, opt.dataset)
@@ -44,32 +44,10 @@ class Instructor:
         self.model.to(opt.device)
         if opt.device.type == 'cuda':
             logger.info('cuda memory allocated: {}'.format(torch.cuda.memory_allocated(device=opt.device.index)))
-        # self._print_args()
+       
 
 
-    def _print_args(self):
-        n_trainable_params, n_nontrainable_params = 0, 0
-        for p in self.model.parameters():
-            n_params = torch.prod(torch.tensor(p.shape))
-            if p.requires_grad:
-                n_trainable_params += n_params
-            else:
-                n_nontrainable_params += n_params
-        logger.info('n_trainable_params: {0}, n_nontrainable_params: {1}'.format(n_trainable_params, n_nontrainable_params))
-        logger.info('> training arguments:')
-        for arg in vars(self.opt):
-            logger.info('>>> {0}: {1}'.format(arg, getattr(self.opt, arg)))
-
-    # def _reset_params(self):
-    #     for child in self.model.children():
-    #         if type(child) != RobertaModel:  # skip bert params
-    #             for p in child.parameters():
-    #                 if p.requires_grad:
-    #                     if len(p.shape) > 1:
-    #                         self.opt.initializer(p)
-    #                     else:
-    #                         stdv = 1. / math.sqrt(p.shape[0])
-    #                         torch.nn.init.uniform_(p, a=-stdv, b=stdv)
+   
 
     def warmup_linear(self, x, warmup=0.002):
         if x < warmup:
@@ -94,26 +72,16 @@ class Instructor:
                 global_step += 1
                 # clear gradient accumulators
                 optimizer.zero_grad()
-
                 inputs = [sample_batched[col].to(self.opt.device) for col in self.opt.inputs_cols]
-
-                outputs,_,_= self.model(inputs)
-                # targets = sample_batched['label'].to(self.opt.device)
+                outputs,_,_= self.model(inputs) 
                 targets= inputs[-1]
-                # targets= inputs[-1]
                 loss = criterion(outputs, targets)
-
-                # logger.info(outputs.shape)
                 loss.sum().backward()
 
                 optimizer.step()
                 with torch.no_grad():
                     n_total += len(outputs)
                     loss_total.append(loss.sum().detach().item())
-
-
-
-
             logger.info('epoch : {}'.format(epoch))
             logger.info('loss: {:.4f}'.format(np.mean(loss_total)))
             pres, recall, f1_score, acc = self._evaluate_acc_f1(val_data_loader)
@@ -125,13 +93,7 @@ class Instructor:
 
                 path = copy.deepcopy(self.model.state_dict())
 
-            # lr_this_step = self.opt.learning_rate * self.warmup_linear(global_step / t_total,
-            #                                                            self.opt.warmup_proportion)
-            # for param_group in optimizer.param_groups:
-            #     param_group['lr'] = lr_this_step
-
-
-            # self.model.train()
+         
         return path
 
     def _evaluate_acc_f1(self, data_loader):
@@ -166,13 +128,7 @@ class Instructor:
 
 
     def run(self):
-        # Loss and Optimizer
-        # if self.opt.dataset =='Corpus-2':
-        #     labels={'MSA':0, 'Dialect':1}
-        # else:
-        #     labels = json.load(open('../datasets/{0}/labels.json'.format(self.opt.dataset)))
-        # if self.opt.dataset == 'Corpus-9':
-        #     labels = {d:i for i,d in enumerate(labels)}
+       
         criterion = nn.CrossEntropyLoss()
         _params = filter(lambda p: p.requires_grad, self.model.parameters())
         optimizer = self.opt.optimizer(self.model.parameters(), lr=self.opt.learning_rate, weight_decay=self.opt.l2reg)
@@ -206,7 +162,6 @@ def main(dataset=None, baseline=None, device_group=None):
     parser.add_argument('--optimizer', default='adam', type=str)
     parser.add_argument('--initializer', default='xavier_uniform_', type=str)
     parser.add_argument('--learning_rate', default=2e-5, type=float, help='try 5e-5, 2e-5 for BERT, 1e-3 for others')
-    # parser.add_argument('--learning_rate', default=1e-3, type=float, help='try 5e-5, 2e-5 for BERT, 1e-3 for others')
     parser.add_argument('--adam_epsilon', default=2e-8, type=float, help='')
     parser.add_argument('--weight_decay', default=0, type=float, help='try 5e-5, 2e-5 for BERT, 1e-3 for others')
     parser.add_argument('--dropout', default=0.5, type=float)
@@ -215,22 +170,15 @@ def main(dataset=None, baseline=None, device_group=None):
     parser.add_argument('--num_epoch', default=5, type=int, help='try larger number for non-BERT models')
     parser.add_argument('--batch_size', default=64, type=int, help='try 16, 32, 64 for BERT models')
     parser.add_argument('--batch_size_val', default=50, type=int, help='try 16, 32, 64 for BERT models')
-    parser.add_argument('--log_step', default=35500, type=int)
+    parser.add_argument('--log_step', default=500, type=int)
     parser.add_argument('--max_grad_norm', default=10, type=int)
     parser.add_argument('--warmup_proportion', default=0.01, type=float)
-    parser.add_argument('--bert_dim', default=768, type=int)
-    parser.add_argument('--negative_sampling', default=20, type=int)
     parser.add_argument('--pretrained_bert_name', default='bert-base-uncased', type=str)
-    # parser.add_argument('--pretrained_bert_name', default='bert-large-uncased', type=str)
-
-    parser.add_argument('--max_seq_len', default=100, type=int)
-    parser.add_argument('--lebel_dim', default=3, type=int)
-
+    parser.add_argument('--max_seq_len', default=30, type=int)
+    parser.add_argument('--lebel_dim', default=2, type=int)
     parser.add_argument('--device', default='cuda' , type=str, help='e.g. cuda:0')
     parser.add_argument('--device_group', default='1' , type=str, help='e.g. cuda:0')
     parser.add_argument('--seed', default=65, type=int, help='set seed for reproducibility')
-    parser.add_argument('--valset_ratio', default=0.1, type=float, help='set ratio between 0 and 1 for validation support')
-    # The following parameters are only valid for the lcf-bert model
     parser.add_argument('--local_context_focus', default='cdm', type=str, help='local context focus mode, cdw or cdm')
     parser.add_argument('--SRD', default=3, type=int, help='semantic-relative-distance, see the paper of LCF-BERT model')
     opt = parser.parse_args()
@@ -242,17 +190,11 @@ def main(dataset=None, baseline=None, device_group=None):
     if device_group is not  None:
         opt.device_group = device_group
 
-    # label_dims = {'Corpus-6': 6,'Corpus-26': 26, 'Corpus-9': 9, 'Corpus-2': 2}
-    # opt.lebel_dim = label_dims[opt.dataset]
+    
 
     opt.seed= random.randint(20,300)
-    # if opt.baseline =='camel':
-    #     opt.pretrained_bert_name ='CAMeL-Lab/bert-base-arabic-camelbert-mix'
-    opt.max_seq_len = {'TNEWS': 128, 'OCNLI': 128, 'IFLYTEK': 128, 'AFQMC': 128, 'YELP': 156, 'TREC': 20, 'yahoo': 256,
-                       'ELEC': 256, 'MPQA': 10, 'AG': 50, 'MR': 30, 'SST-2': 30,'SST-2-small': 30, 'SST-5': 30, 'PC': 30, 'CR': 30,
-                       'DBPedia': 160, 'IMDB': 220, 'SUBJ': 30,
-                       'semeval': 80, 'R8': 207, 'hsumed': 156, 'FAKE': 885}.get(opt.dataset)
-    # if seed is not None:opt.seed= seed
+    
+ 
     if opt.seed is not None:
 
         random.seed(opt.seed)
@@ -267,7 +209,7 @@ def main(dataset=None, baseline=None, device_group=None):
         'test': 'datasets/{0}/test.json'.format(opt.dataset),
         'dev': 'datasets/{0}/dev.json'.format(opt.dataset)
     }
-    # os.environ['CUDA_VISIBLE_DEVICES']=opt.device_group
+    
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
     os.environ["CUDA_VISIBLE_DEVICES"] = opt.device_group
     input_colses =  ['input_ids', 'segments_ids', 'input_mask', 'label']
