@@ -22,7 +22,7 @@ pip install -r requirements.txt
 python train_baseline.py --dataset='MR' 
 ```
 
-Note that we have already trained a baseline on MR can be downloaded from this [link](), simply put in state_dict, or you can use your custom model, no additional configuration is needed.
+Note that we have already trained a baseline on MR can be downloaded from this [link](https://drive.google.com/file/d/19xqW8xQ3sehrPd86LCz8bStjreEbjwld/view?usp=sharing), simply put in state_dict, or you can use your custom model, no additional configuration is needed.
 
 
 *  Interprete the baseline prediction         
