@@ -6,7 +6,7 @@
 
 # Data
 
-The data should be in json file with this format {'text':'', 'label':''}. We have processed MR as an example, [download](https://drive.google.com/drive/folders/1D-HnEWps6NsajM3x-DIn560atKFlw2-I?usp=sharing) and place it datasets/MR.
+The data should be in json file with this format {'text':'', 'label':''}. We have pre-processed MR dataset as an example, [download it](https://drive.google.com/drive/folders/1D-HnEWps6NsajM3x-DIn560atKFlw2-I?usp=sharing) and place it datasets/MR.
 
 # Prerequisites:
 Required packages are listed in the requirements.txt file:
