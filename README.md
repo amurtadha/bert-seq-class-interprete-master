@@ -33,9 +33,9 @@ python run_interpretation.py --dataset='MR'
 The results will be written to outputs/MR.html
 
 
-An example of ten sentence are shown in outputs/MR.html
-
-<img src="https://github.com/amurtadha/bert-seq-class-interprete-master/tree/main/outputs/MR.jpg" alt="Alt text" title="Optional title">
+An example of ten sentence are shown in /outputs/MR.html
 
 
-![Alt text](https://github.com/amurtadha/bert-seq-class-interprete-master/tree/main/outputs/MR.jpg?raw=true "Title")
+
+![movie reviews examples](/outputs/MR.PNG)
+
