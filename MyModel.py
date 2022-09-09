@@ -13,11 +13,7 @@ class FineTuning(nn.Module):
         config.num_labels = args.lebel_dim
         self.encoder = AutoModelForSequenceClassification.from_pretrained(args.pretrained_bert_name, config=config)
         self.encoder.to('cuda')
-        # layers = [nn.Linear(config.hidden_size, hidden_size), nn.ReLU(), nn.Dropout(.3),
-        #           nn.Linear(hidden_size, args.lebel_dim)]
-
-        # layers = [nn.Linear(config.hidden_size, args.lebel_dim)]
-        # self.classifier = nn.Sequential(*layers)
+    
 
     def forward(self, inputs):
         input_ids, token_type_ids, attention_mask = inputs[:3]
